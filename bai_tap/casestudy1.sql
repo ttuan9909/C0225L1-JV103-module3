@@ -23,6 +23,7 @@ ho_ten VARCHAR(45),
 ngay_sinh DATE,
 so_cmnd VARCHAR(45),
 luong DOUBLE,
+so_dien_thoai VARCHAR(45),
 email VARCHAR(45),
 dia_chi VARCHAR(45),
 ma_vi_tri INT,
@@ -179,5 +180,180 @@ VALUES
 (1, 'Villa'),
 (2, 'House'),
 (3, 'Room');
+
+INSERT INTO dich_vu (mo_ta_tien_nghi_khac, dien_tich_ho_boi, so_tang, ma_kieu_thue, ma_loai_dich_vu)
+VALUES 
+('Có hồ bơi', 500, 4, 3, 1),
+('Có thêm bếp nướng', NULL, 3, 2, 2),
+('Có tivi', NULL, NULL, 4, 3),
+('Có hồ bơi', 300, 3, 3, 1),
+('Có thêm bếp nướng', NULL, 2, 3, 2),
+('Có tivi', NULL, NULL, 4, 3);
+
+INSERT INTO dich_vu_di_kem (ma_dich_vu_di_kem, ten_dich_vu_di_kem, gia, don_vi, trang_thai)
+VALUES
+(1, 'Karaoke', 10000, 'giờ', 'tiện nghi, hiện tại'),
+(2, 'Thuê xe máy', 10000, 'chiếc', 'hỏng 1 xe'),
+(3, 'Thuê xe đạp', 20000, 'chiếc', 'tốt'),
+(4, 'Buffet buổi sáng', 15000, 'suất', 'đầy đủ đồ ăn, tráng miệng'),
+(5, 'Buffet buổi trưa', 90000, 'suất', 'đầy đủ đồ ăn, tráng miệng'),
+(6, 'Buffet buổi tối', 16000, 'suất', 'đầy đủ đồ ăn, tráng miệng');
+
+INSERT INTO hop_dong (ma_hop_dong, ngay_lam_hop_dong, ngay_ket_thuc, tien_dat_coc, ma_nhan_vien, ma_khach_hang, ma_dich_vu) VALUES
+(1, '2020-12-08', '2020-12-08', 0, 3, 1, 3),
+(2, '2020-07-14', '2020-07-21', 200000, 7, 3, 1),
+(3, '2021-03-15', '2021-03-17', 50000, 3, 4, 2),
+(4, '2021-01-14', '2021-01-18', 100000, 7, 5, 5),
+(5, '2021-07-14', '2021-07-15', 0, 7, 2, 6),
+(6, '2021-06-01', '2021-06-03', 0, 7, 7, 6),
+(7, '2021-09-02', '2021-09-05', 100000, 7, 4, 4),
+(8, '2021-06-17', '2021-06-18', 150000, 3, 4, 1),
+(9, '2020-11-19', '2020-11-19', 0, 3, 4, 3),
+(10, '2021-04-12', '2021-04-14', 0, 10, 3, 5),
+(11, '2021-04-25', '2021-04-25', 0, 2, 2, 1),
+(12, '2021-05-25', '2021-05-27', 0, 7, 10, 1);
+
+INSERT INTO hop_dong_chi_tiet (ma_hop_dong_chi_tiet, so_luong, ma_hop_dong, ma_dich_vu_di_kem) VALUES
+(1, 5, 2, 4),
+(2, 8, 2, 5),
+(3, 15, 2, 6),
+(4, 1, 3, 1),
+(5, 11, 3, 2),
+(6, 1, 1, 3),
+(7, 2, 1, 2),
+(8, 2, 12, 2);
+
+
+-- Câu 2
+SELECT * 
+FROM nhan_vien
+WHERE (
+    ho_ten LIKE 'H%' 
+    OR ho_ten LIKE 'T%' 
+    OR ho_ten LIKE 'K%'
+)
+AND LENGTH(ho_ten) <= 15;
+
+-- SELECT * FROM nhan_vien
+-- WHERE ho_ten REGEXP '^[HTK]';
+
+-- Câu 3
+SELECT * 
+FROM khach_hang
+WHERE YEAR(CURDATE()) - YEAR(ngay_sinh)
+    - (DATE_FORMAT(CURDATE(), '%m%d') < DATE_FORMAT(ngay_sinh, '%m%d')) BETWEEN 18 AND 50
+AND (dia_chi LIKE '%Đà Nẵng' OR dia_chi LIKE '%Quảng Trị');
+
+-- Câu 4
+select kh.ma_khach_hang, kh.ho_ten, COUNT(hd.ma_hop_dong) AS so_lan_dat 
+from hop_dong hd
+left join khach_hang kh on kh.ma_khach_hang = hd.ma_khach_hang
+join loai_khach lk on kh.ma_loai_khach = lk.ma_loai_khach
+where lk.ten_loai_khach like 'Diamond'
+group by kh.ma_khach_hang, kh.ho_ten 
+order by so_lan_dat;
+
+-- Câu 5
+SELECT 
+    kh.ma_khach_hang, 
+    kh.ho_ten, 
+    lk.ten_loai_khach, 
+    hd.ma_hop_dong, 
+    dv.ten_dich_vu, 
+    hd.ngay_lam_hop_dong,
+    hd.ngay_ket_thuc, 
+    dv.chi_phi_thue + IFNULL(SUM(hdct.so_luong * dvdk.gia), 0) AS tong_tien
+FROM khach_hang kh
+JOIN loai_khach lk ON kh.ma_loai_khach = lk.ma_loai_khach
+LEFT JOIN hop_dong hd ON kh.ma_khach_hang = hd.ma_khach_hang
+LEFT JOIN dich_vu dv ON hd.ma_dich_vu = dv.ma_dich_vu
+LEFT JOIN hop_dong_chi_tiet hdct ON hd.ma_hop_dong = hdct.ma_hop_dong
+LEFT JOIN dich_vu_di_kem dvdk ON hdct.ma_dich_vu_di_kem = dvdk.ma_dich_vu_di_kem
+GROUP BY 
+    kh.ma_khach_hang, 
+    kh.ho_ten, 
+    lk.ten_loai_khach, 
+    hd.ma_hop_dong, 
+    dv.ten_dich_vu, 
+    hd.ngay_lam_hop_dong,
+    hd.ngay_ket_thuc, 
+    dv.chi_phi_thue
+ORDER BY ma_khach_hang;
+
+-- Câu 6
+select DISTINCT  dv.ma_dich_vu, dv.ten_dich_vu, dv.dien_tich, dv.chi_phi_thue, ldv.ten_loai_dich_vu 
+from dich_vu dv
+left join loai_dich_vu ldv on dv.ma_loai_dich_vu = ldv.ma_loai_dich_vu
+left join hop_dong hd on dv.ma_dich_vu = hd.ma_dich_vu
+WHERE dv.ma_dich_vu not in (
+select hd.ma_dich_vu
+from hop_dong hd
+where YEAR(hd.ngay_lam_hop_dong) = 2021 
+AND MONTH(hd.ngay_lam_hop_dong) BETWEEN 1 AND 3);
+
+-- Câu 7
+select DISTINCT  dv.ma_dich_vu, dv.ten_dich_vu, dv.dien_tich, dv.chi_phi_thue, ldv.ten_loai_dich_vu 
+from dich_vu dv
+left join loai_dich_vu ldv on dv.ma_loai_dich_vu = ldv.ma_loai_dich_vu
+left join hop_dong hd on dv.ma_dich_vu = hd.ma_dich_vu
+WHERE YEAR(hd.ngay_lam_hop_dong) = 2020 
+AND dv.ma_dich_vu not in (
+select hd.ma_dich_vu
+from hop_dong hd
+where YEAR(hd.ngay_lam_hop_dong) = 2021 
+);
+
+-- Câu 8
+SELECT *
+FROM khach_hang
+WHERE ho_ten IN (
+    SELECT ho_ten
+    FROM khach_hang
+    GROUP BY ho_ten
+    HAVING COUNT(*) = 1
+);
+
+-- Câu 9
+SELECT 
+    MONTH(ngay_lam_hop_dong) AS thang,
+    COUNT(DISTINCT ma_khach_hang) AS so_khach_hang
+FROM hop_dong
+WHERE YEAR(ngay_lam_hop_dong) = 2021
+GROUP BY MONTH(ngay_lam_hop_dong)
+ORDER BY thang;
+
+-- Câu 10
+SELECT 
+    hd.ma_hop_dong, 
+    hd.ngay_lam_hop_dong, 
+    hd.ngay_ket_thuc, 
+    hd.tien_dat_coc,
+    SUM(hdct.so_luong) AS so_luong_dich_vu_di_kem
+FROM hop_dong hd
+left JOIN hop_dong_chi_tiet hdct ON hd.ma_hop_dong = hdct.ma_hop_dong
+left JOIN dich_vu_di_kem dvdk ON hdct.ma_dich_vu_di_kem = dvdk.ma_dich_vu_di_kem
+GROUP BY hd.ma_hop_dong, hd.ngay_lam_hop_dong, hd.ngay_ket_thuc;
+
+-- Câu 11
+select dvdk.ma_dich_vu_di_kem,
+	   dvdk.ten_dich_vu_di_kem
+from hop_dong_chi_tiet hdct
+join dich_vu_di_kem dvdk on hdct.ma_dich_vu_di_kem = dvdk.ma_dich_vu_di_kem
+join hop_dong hd on hdct.ma_hop_dong = hd.ma_hop_dong
+join khach_hang kh on hd.ma_khach_hang = kh.ma_khach_hang
+join loai_khach lk on kh.ma_loai_khach = lk.ma_loai_khach
+WHERE lk.ten_loai_khach LIKE 'diamond'
+  AND (kh.dia_chi LIKE '%Vinh' OR kh.dia_chi LIKE '%Quảng Ngãi');
+
+
+
+
+
+
+
+
+
+
+
 
 
