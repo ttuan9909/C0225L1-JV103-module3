@@ -181,14 +181,17 @@ VALUES
 (2, 'House'),
 (3, 'Room');
 
-INSERT INTO dich_vu (mo_ta_tien_nghi_khac, dien_tich_ho_boi, so_tang, ma_kieu_thue, ma_loai_dich_vu)
-VALUES 
-('Có hồ bơi', 500, 4, 3, 1),
-('Có thêm bếp nướng', NULL, 3, 2, 2),
-('Có tivi', NULL, NULL, 4, 3),
-('Có hồ bơi', 300, 3, 3, 1),
-('Có thêm bếp nướng', NULL, 2, 3, 2),
-('Có tivi', NULL, NULL, 4, 3);
+INSERT INTO dich_vu (
+    ma_dich_vu, ten_dich_vu, dien_tich, chi_phi_thue, so_nguoi_toi_da, 
+    tieu_chuan_phong, mo_ta_tien_nghi_khac, dien_tich_ho_boi, so_tang, 
+    ma_kieu_thue, ma_loai_dich_vu
+) VALUES
+(1, 'Villa Beach Front', 25000, 10000000, 10, 'vip', 'Có hồ bơi', 500, 4, 3, 1),
+(2, 'House Princess 01', 14000, 5000000, 7, 'vip', 'Có thêm bếp nướng', NULL, 3, 2, 2),
+(3, 'Room Twin 01', 5000, 1000000, 2, 'normal', 'Có tivi', NULL, NULL, 4, 3),
+(4, 'Villa No Beach Front', 22000, 9000000, 8, 'normal', 'Có hồ bơi', 300, 3, 3, 1),
+(5, 'House Princess 02', 10000, 4000000, 5, 'normal', 'Có thêm bếp nướng', NULL, 2, 3, 2),
+(6, 'Room Twin 02', 3000, 900000, 2, 'normal', 'Có tivi', NULL, NULL, 4, 3);
 
 INSERT INTO dich_vu_di_kem (ma_dich_vu_di_kem, ten_dich_vu_di_kem, gia, don_vi, trang_thai)
 VALUES
