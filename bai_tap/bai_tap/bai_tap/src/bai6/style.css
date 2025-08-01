@@ -1,0 +1,15 @@
+h1 {
+    color: green;
+}
+
+p {
+    font: 25px "times new roman", sans-serif;
+}
+
+.container {
+    text-align: left;
+    background-color: bisque;
+    border: solid red;
+    margin: 10px 20px 20px 20px;
+    text-indent: 50px;
+}
