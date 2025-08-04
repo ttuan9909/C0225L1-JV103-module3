@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Image Gallery</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        h2 {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 5px;
+        }
+
+        .gallery-item {
+            flex: 25%;
+            max-width: 25%;
+            padding: 5px;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+        }
+
+        .desc {
+            text-align: center;
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        /* Media Queries */
+        @media screen and (max-width: 700px) {
+            .gallery-item {
+                flex: 50%;
+                max-width: 50%;
+            }
+        }
+
+        @media screen and (max-width: 500px) {
+            .gallery-item {
+                flex: 100%;
+                max-width: 100%;
+            }
+        }
+
+        p.note {
+            text-align: center;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Responsive Image Gallery</h2>
+<p style="text-align:center;">Resize the browser window to see the effect.</p>
+
+<div class="gallery">
+    <div class="gallery-item">
+        <img src="https://www.w3schools.com/css/img_5terre.jpg" alt="Image 1">
+        <div class="desc">Add a description of the image here</div>
+    </div>
+    <div class="gallery-item">
+        <img src="https://www.w3schools.com/css/img_forest.jpg" alt="Image 2">
+        <div class="desc">Add a description of the image here</div>
+    </div>
+    <div class="gallery-item">
+        <img src="https://www.w3schools.com/css/img_lights.jpg" alt="Image 3">
+        <div class="desc">Add a description of the image here</div>
+    </div>
+    <div class="gallery-item">
+        <img src="https://www.w3schools.com/css/img_mountains.jpg" alt="Image 4">
+        <div class="desc">Add a description of the image here</div>
+    </div>
+</div>
+
+<p class="note">
+    This example uses media queries to re-arrange the images on different screen sizes:
+    for screens larger than 700px wide, it will show four images side by side,
+    for screens smaller than 700px, it will show two images side by side.
+    For screens smaller than 500px, the images will stack vertically (100%).
+</p>
+
+</body>
+</html>
