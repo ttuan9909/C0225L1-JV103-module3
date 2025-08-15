@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ProductRepository implements IProductRepository {
-    // ✅ Dùng static List lưu dữ liệu chung cho mọi instance
+
     private static final List<Product> productList = new ArrayList<>();
     private static int currentId = 0;
 
-    // ✅ Khởi tạo dữ liệu mẫu bằng static block
+
     static {
         productList.add(new Product(++currentId, "iPhone 15", 25000000, 5));
         productList.add(new Product(++currentId, "Galaxy S24", 22000000, 7));

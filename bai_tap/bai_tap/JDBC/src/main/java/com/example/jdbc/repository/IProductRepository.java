@@ -1,15 +1,15 @@
-package com.example.demo_mvc.repository;
+package com.example.jdbc.repository;
 
-import com.example.demo_mvc.entity.Product;
+import com.example.jdbc.entity.Product;
 
 import java.util.List;
 
 public interface IProductRepository {
     List<Product> findAll();
     Product findById(int id);
-    void save(Product product);        // tạo mới (tự tăng id)
+    boolean save(Product product);        // tạo mới (tự tăng id)
     void update(Product product);      // cập nhật theo product.id
     boolean deleteById(int id);
     List<Product> searchByName(String keyword);
-
 }
+
