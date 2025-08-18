@@ -1,5 +1,6 @@
 package com.example.jdbc.repository;
 
+import com.example.jdbc.dto.ProductDto;
 import com.example.jdbc.entity.Product;
 
 import java.sql.Connection;
@@ -8,70 +9,128 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ProductRepository implements IProductRepository {
-    private static final String SELECT_ALL      = "SELECT * FROM product;";
-    private static final String INSERT_INTO     = "INSERT INTO product(name, price, quantity) VALUES (?, ?, ?);";
-    private static final String SELECT_BY_ID    = "SELECT * FROM product WHERE id = ?;";
-    private static final String UPDATE_BY_ID    = "UPDATE product SET name = ?, price = ?, quantity = ? WHERE id = ?;";
-    private static final String DELETE_BY_ID    = "DELETE FROM product WHERE id = ?;";
-    private static final String SEARCH_BY_NAME  = "SELECT * FROM product WHERE LOWER(name) LIKE ?;";
 
+    // ====== SQL (VIEW: JOIN để có category_name) ======
+    private static final String SELECT_ALL_VIEW =
+            "SELECT p.id, p.name, p.price, p.quantity, c.name AS category_name " +
+                    "FROM product p LEFT JOIN category c ON p.category_id = c.id;";
+
+    private static final String SELECT_VIEW_BY_ID =
+            "SELECT p.id, p.name, p.price, p.quantity, c.name AS category_name " +
+                    "FROM product p LEFT JOIN category c ON p.category_id = c.id WHERE p.id = ?;";
+
+    private static final String SEARCH_VIEW_BY_NAME =
+            "SELECT p.id, p.name, p.price, p.quantity, c.name AS category_name " +
+                    "FROM product p LEFT JOIN category c ON p.category_id = c.id WHERE LOWER(p.name) LIKE ?;";
+
+    // ====== SQL (WRITE: thao tác entity Product) ======
+    private static final String INSERT_INTO =
+            "INSERT INTO product(name, price, quantity, category_id) VALUES (?, ?, ?, ?);";
+
+    private static final String UPDATE_BY_ID =
+            "UPDATE product SET name = ?, price = ?, quantity = ?, category_id = ? WHERE id = ?;";
+
+    private static final String DELETE_BY_ID =
+            "DELETE FROM product WHERE id = ?;";
+
+    // ================== READ (DTO) ==================
 
     @Override
-    public List<Product> findAll() {
-        List<Product> productList = new ArrayList<>();
-        try (Connection connection = BaseRepository.getConnectDB();) {
-            PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ALL);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                int id = resultSet.getInt("id");
-                String name = resultSet.getString("name");
-                int price = resultSet.getInt("price");
-                int quantity = resultSet.getInt("quantity");
-                Product product = new Product(id, name, price, quantity);
-                productList.add(product);
+    public List<ProductDto> findAll() {
+        List<ProductDto> productList = new ArrayList<>();
+        try (Connection connection = BaseRepository.getConnectDB();
+             PreparedStatement ps = connection.prepareStatement(SELECT_ALL_VIEW);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                productList.add(new ProductDto(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getInt("price"),
+                        rs.getInt("quantity"),
+                        rs.getString("category_name") // <- chỉ lấy tên danh mục
+                ));
             }
         } catch (Exception e) {
-            System.out.println("Lôỗi query");
+            System.out.println("Lỗi query findAll");
+            e.printStackTrace();
         }
         return productList;
     }
 
     @Override
-    public Product findById(int id) {
+    public ProductDto findById(int id) {
         try (Connection connection = BaseRepository.getConnectDB();
-             PreparedStatement ps = connection.prepareStatement(SELECT_BY_ID)) {
+             PreparedStatement ps = connection.prepareStatement(SELECT_VIEW_BY_ID)) {
 
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    String name = rs.getString("name");
-                    int price = rs.getInt("price");
-                    int quantity = rs.getInt("quantity");
-                    return new Product(id, name, price, quantity);
+                    return new ProductDto(
+                            rs.getInt("id"),
+                            rs.getString("name"),
+                            rs.getInt("price"),
+                            rs.getInt("quantity"),
+                            rs.getString("category_name")
+                    );
                 }
             }
         } catch (Exception e) {
-            System.out.println("Lỗi query findById");
+            System.out.println("Lỗi query findById (view)");
             e.printStackTrace();
         }
-        return null; // không tìm thấy
+        return null;
     }
 
+    @Override
+    public List<ProductDto> searchByName(String keyword) {
+        String k = (keyword == null) ? "" : keyword.trim().toLowerCase();
+        if (k.isEmpty()) {
+            return findAll();
+        }
+
+        List<ProductDto> results = new ArrayList<>();
+        try (Connection connection = BaseRepository.getConnectDB();
+             PreparedStatement ps = connection.prepareStatement(SEARCH_VIEW_BY_NAME)) {
+
+            ps.setString(1, "%" + k + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    results.add(new ProductDto(
+                            rs.getInt("id"),
+                            rs.getString("name"),
+                            rs.getInt("price"),
+                            rs.getInt("quantity"),
+                            rs.getString("category_name")
+                    ));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Lỗi query searchByName (view)");
+            e.printStackTrace();
+        }
+        return results.isEmpty() ? Collections.emptyList() : results;
+    }
+
+    // ================== WRITE (ENTITY) ==================
 
     @Override
     public boolean save(Product product) {
-        try (Connection connection = BaseRepository.getConnectDB();) {
-            PreparedStatement preparedStatement = connection.prepareStatement(INSERT_INTO);
-            preparedStatement.setString(1, product.getName());
-            preparedStatement.setInt(2, product.getPrice());
-            preparedStatement.setInt(3, product.getQuantity());
-            int effectRow = preparedStatement.executeUpdate();
+        try (Connection connection = BaseRepository.getConnectDB();
+             PreparedStatement ps = connection.prepareStatement(INSERT_INTO)) {
+
+            ps.setString(1, product.getName());
+            ps.setInt(2, product.getPrice());
+            ps.setInt(3, product.getQuantity());
+            ps.setInt(4, product.getCategoryId()); // categoryId bắt buộc (đã thống nhất)
+
+            int effectRow = ps.executeUpdate();
             return effectRow == 1;
         } catch (Exception e) {
-            System.out.println("Lõi query");
+            System.out.println("Lỗi query save");
+            e.printStackTrace();
         }
         return false;
     }
@@ -84,8 +143,9 @@ public class ProductRepository implements IProductRepository {
             ps.setString(1, product.getName());
             ps.setInt(2, product.getPrice());
             ps.setInt(3, product.getQuantity());
-            ps.setInt(4, product.getId());
-            ps.executeUpdate(); // có thể kiểm tra số dòng ảnh hưởng nếu muốn
+            ps.setInt(4, product.getCategoryId());
+            ps.setInt(5, product.getId());
+            ps.executeUpdate();
         } catch (Exception e) {
             System.out.println("Lỗi query update");
             e.printStackTrace();
@@ -105,33 +165,5 @@ public class ProductRepository implements IProductRepository {
             e.printStackTrace();
         }
         return false;
-    }
-
-    @Override
-    public List<Product> searchByName(String keyword) {
-        String k = (keyword == null) ? "" : keyword.trim().toLowerCase();
-        if (k.isEmpty()) {
-            return findAll();
-        }
-
-        List<Product> results = new ArrayList<>();
-        try (Connection connection = BaseRepository.getConnectDB();
-             PreparedStatement ps = connection.prepareStatement(SEARCH_BY_NAME)) {
-
-            ps.setString(1, "%" + k + "%");
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    int id = rs.getInt("id");
-                    String name = rs.getString("name");
-                    int price = rs.getInt("price");
-                    int quantity = rs.getInt("quantity");
-                    results.add(new Product(id, name, price, quantity));
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Lỗi query searchByName");
-            e.printStackTrace();
-        }
-        return results.isEmpty() ? Collections.emptyList() : results;
     }
 }

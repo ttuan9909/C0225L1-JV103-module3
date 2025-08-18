@@ -1,28 +1,21 @@
-package com.example.jdbc.entity;
+package com.example.jdbc.dto;
 
-public class Product {
+public class ProductDto {
     private int id;
     private String name;
     private int price;
     private int quantity;
-    private Integer categoryId;
+    private String categoryName;
 
-    public Product() {
+    public ProductDto() {
     }
 
-    public Product(int id, String name, int price, int quantity) {
+    public ProductDto(int id, String name, int price, int quantity, String categoryName) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.quantity = quantity;
-    }
-
-    public Product(int id, String name, int price, int quantity, Integer categoryId) {
-        this.id = id;
-        this.name = name;
-        this.price = price;
-        this.quantity = quantity;
-        this.categoryId = categoryId;
+        this.categoryName = categoryName;
     }
 
     public int getId() {
@@ -57,11 +50,11 @@ public class Product {
         this.quantity = quantity;
     }
 
-    public Integer getCategoryId() {
-        return categoryId;
+    public String getCategoryName() {
+        return categoryName;
     }
 
-    public void setCategoryId(Integer categoryId) {
-        this.categoryId = categoryId;
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 }

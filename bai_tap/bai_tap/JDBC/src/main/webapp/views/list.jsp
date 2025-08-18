@@ -1,9 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
-<%@ page import="java.util.*,com.example.jdbc.entity.Product" %>
-<%
-    List<Product> products = (List<Product>) request.getAttribute("products");
-    String q = (String) request.getAttribute("q");
-%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
 <html>
 <head>
     <title>Danh sách sản phẩm</title>
@@ -19,7 +17,7 @@
 
 <form method="get" action="${pageContext.request.contextPath}/products" class="inline">
     <input type="hidden" name="action" value="search"/>
-    <input name="q" value="<%= q %>" placeholder="Tìm theo tên..."/>
+    <input name="q" value="${q}" placeholder="Tìm theo tên..."/>
     <button type="submit">Tìm</button>
 </form>
 <a href="${pageContext.request.contextPath}/products?action=list">Xoá lọc</a>
@@ -29,33 +27,41 @@
 <table>
     <thead>
     <tr>
-        <th>ID</th><th>Tên</th><th>Giá (VND)</th><th>Số lượng</th><th>Hành động</th>
+        <th>ID</th>
+        <th>Tên</th>
+        <th>Giá (VND)</th>
+        <th>Số lượng</th>
+        <th>Danh mục</th>
+        <th>Hành động</th>
     </tr>
     </thead>
     <tbody>
-    <%
-        if (products != null && !products.isEmpty()) {
-            for (Product p : products) {
-    %>
-    <tr>
-        <td><%= p.getId() %></td>
-        <td>
-            <a href="${pageContext.request.contextPath}/products?action=view&id=<%=p.getId()%>">
-                <%= p.getName() %>
-            </a>
-        </td>
-        <td><%= String.format("%,d", p.getPrice()) %></td>
-        <td><%= p.getQuantity() %></td>
-        <td class="actions">
-            <a href="${pageContext.request.contextPath}/products?action=edit&id=<%=p.getId()%>">Sửa</a>
-            <a href="${pageContext.request.contextPath}/products?action=delete&id=<%=p.getId()%>"
-               onclick="return confirm('Xoá sản phẩm này?')">Xoá</a>
-        </td>
-    </tr>
-    <%      }
-    } else { %>
-    <tr><td colspan="5">Không có dữ liệu.</td></tr>
-    <% } %>
+    <c:forEach var="p" items="${products}">
+        <tr>
+            <td>${p.id}</td>
+            <td>
+                <a href="${pageContext.request.contextPath}/products?action=view&id=${p.id}">
+                        ${p.name}
+                </a>
+            </td>
+            <td><fmt:formatNumber value="${p.price}" type="number" groupingUsed="true"/></td>
+            <td>${p.quantity}</td>
+            <td>
+                <c:choose>
+                    <c:when test="${empty p.categoryName}">(Chưa gán)</c:when>
+                    <c:otherwise>${p.categoryName}</c:otherwise>
+                </c:choose>
+            </td>
+            <td class="actions">
+                <a href="${pageContext.request.contextPath}/products?action=edit&id=${p.id}">Sửa</a>
+                <a href="${pageContext.request.contextPath}/products?action=delete&id=${p.id}"
+                   onclick="return confirm('Xoá sản phẩm này?')">Xoá</a>
+            </td>
+        </tr>
+    </c:forEach>
+    <c:if test="${empty products}">
+        <tr><td colspan="6">Không có dữ liệu.</td></tr>
+    </c:if>
     </tbody>
 </table>
 </body>

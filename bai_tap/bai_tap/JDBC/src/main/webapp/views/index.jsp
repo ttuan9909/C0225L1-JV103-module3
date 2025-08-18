@@ -21,6 +21,8 @@
             text-decoration: none;
             border-radius: 6px;
             font-size: 16px;
+            margin: 5px; /* cách nhau một chút */
+            display: inline-block;
         }
         .btn:hover {
             background-color: #45a049;
@@ -29,9 +31,10 @@
 </head>
 <body>
 <h1>Chào mừng bạn đến với ứng dụng Quản lý Sản phẩm</h1>
-<p>Nhấn nút bên dưới để xem danh sách sản phẩm</p>
+<p>Nhấn nút bên dưới để xem danh sách</p>
 
-<a href="${pageContext.request.contextPath}/products" class="btn">Vào danh sách</a>
+<a href="${pageContext.request.contextPath}/products" class="btn">Vào danh sách sản phẩm</a>
+<a href="${pageContext.request.contextPath}/categories" class="btn">Vào danh sách danh mục</a>
 
 </body>
 </html>
